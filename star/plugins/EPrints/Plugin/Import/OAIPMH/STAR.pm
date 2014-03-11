@@ -103,8 +103,8 @@ sub get_rameau_subjects
 
 	foreach my $nom ( @noms )
 	{
-		my @labels = ( @{$self->get_node_content_multiple( $nom, 'elementdEntree', { name => 'autoriteSource', value => 'Sudoc' } )},
-				@{$self->get_node_content_multiple( $nom, 'subdivision', { name => 'autoriteSource', value => 'Sudoc' } )}
+		my @labels = ( @{$self->get_node_content_multiple( $nom, 'elementdEntree', { name => 'autoriteSource', value => 'Sudoc' } ) || [] },
+				@{$self->get_node_content_multiple( $nom, 'subdivision', { name => 'autoriteSource', value => 'Sudoc' } ) || [] }
 		);
 
 		next unless( scalar( @labels ) );
