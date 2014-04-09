@@ -67,7 +67,7 @@ sub thesis_record_to_epdata
 	my $alt_title_en = $self->get_node_content( $tef, 'alternative', { name => 'xml:lang', value => 'en' } );
 	push @alt_titles, $alt_title_en if( defined $alt_title_en );
 
-	$epdata->{title} = \@titles if( scalar( @titles ) );
+	$epdata->{title} = $self->to_local_field( 'title', \@titles );
 	$epdata->{alt_title} = \@alt_titles if( scalar( @alt_titles ) );
 
 	my @abstracts;
@@ -79,7 +79,7 @@ sub thesis_record_to_epdata
 	my $abstract = $self->get_node_content( $tef, 'abstract', { name => 'xml:lang', value => 'en' } );
 	push @abstracts, $abstract if( defined $abstract );
 
-	$epdata->{abstract} = \@abstracts;
+	$epdata->{abstract} = $self->to_local_field( 'abstract', \@abstracts );
 
 	$epdata->{language} = [$self->get_node_content( $tef, 'language' )];
 	
@@ -92,6 +92,56 @@ sub thesis_record_to_epdata
 
 	return $epdata;
 }
+
+sub to_local_field
+{
+        my( $self, $fieldname, $values ) = @_;
+
+        if( !defined $values )
+        {
+                return undef;
+        }
+
+        my $ds = $self->{repository}->dataset( 'eprint' );
+
+        if( !$ds->has_field( $fieldname ) )
+        {
+                return undef;
+        }
+
+        my $field = $ds->field( $fieldname );
+
+        if( $field->property( 'multiple' ) )
+        {
+                # array to array
+                if( ref( $values ) eq 'ARRAY' )
+                {
+                        return $values;
+                }
+                # single to array
+                elsif( ref( $values ) eq '' )
+                {
+                        return [$values];
+                }
+                # hash to array ?!
+        }
+        else
+        {
+                # array to single
+                if( ref( $values ) eq 'ARRAY' )
+                {
+                        return $values->[0];
+                }
+                # single to single
+                elsif( ref( $values ) eq '' )
+                {
+                        return $values;
+                }
+        }
+
+        return undef;
+}
+
 
 sub get_rameau_subjects
 {
